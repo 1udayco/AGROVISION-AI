@@ -1,0 +1,105 @@
+version: '3.9'
+
+services:
+  # ─── Frontend ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:4000
+      - NEXT_PUBLIC_ML_SERVICE_URL=http://ml-service:8000
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_OPENWEATHER_API_KEY=${NEXT_PUBLIC_OPENWEATHER_API_KEY}
+    depends_on:
+      - backend
+      - ml-service
+    networks:
+      - agrovision-net
+    restart: unless-stopped
+
+  # ─── Backend ───────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ML_SERVICE_URL=http://ml-service:8000
+      - FRONTEND_URL=http://localhost:3000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+      - ml-service
+    networks:
+      - agrovision-net
+    restart: unless-stopped
+    volumes:
+      - ./backend/logs:/app/logs
+
+  # ─── ML Service ────────────────────────────────────────
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: ../docker/Dockerfile.ml
+    ports:
+      - '8000:8000'
+    environment:
+      - ML_SERVICE_PORT=8000
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+    volumes:
+      - ./ml-service/models:/app/models
+    networks:
+      - agrovision-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  # ─── Redis Cache ───────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - agrovision-net
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # ─── Nginx Reverse Proxy ───────────────────────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+      - ml-service
+    networks:
+      - agrovision-net
+    restart: unless-stopped
+
+networks:
+  agrovision-net:
+    driver: bridge
+
+volumes:
+  redis-data:

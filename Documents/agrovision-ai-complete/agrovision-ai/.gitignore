@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.Python
+venv/
+.venv/
+env/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# ML Models (large files - use Git LFS or cloud storage)
+ml-service/models/*.h5
+ml-service/models/*.pkl
+ml-service/models/*.pt
+ml-service/datasets/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+
+# Testing
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+
+# Docker
+*.pid
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Misc
+.vercel/
+.railway/

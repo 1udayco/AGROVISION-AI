@@ -1,0 +1,26 @@
+{
+  "name": "agrovision-ai",
+  "version": "1.0.0",
+  "description": "AI-Powered Agriculture Platform for Indian Farmers",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:ml\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:ml": "cd ml-service && uvicorn main:app --reload --port 8000",
+    "build": "cd frontend && npm run build",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "setup": "bash setup.sh",
+    "test": "cd backend && npm test && cd ../ml-service && python -m pytest tests/ -v"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["agriculture", "ai", "machine-learning", "nextjs", "fastapi", "supabase"],
+  "author": "AgroVision AI Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
